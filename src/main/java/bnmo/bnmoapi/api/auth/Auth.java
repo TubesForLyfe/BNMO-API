@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import bnmo.bnmoapi.classes.auth.UserLogin;
-import bnmo.bnmoapi.classes.auth.UserRegister;
-import bnmo.bnmoapi.classes.common.Message;
-import bnmo.bnmoapi.classes.common.User;
+import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.users.User;
+import bnmo.bnmoapi.classes.users.UserLogin;
+import bnmo.bnmoapi.classes.users.UserRegister;
 import io.jsonwebtoken.*;
 
 @RestController
@@ -29,7 +29,7 @@ public class Auth {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		String hash_password = passwordEncoder.encode(user.password);
 		String token = Jwts.builder().setSubject(user.username).compact();
-		String sql = "INSERT INTO users (nama, username, password, image, token) VALUES ('" + user.nama + "', '" + user.username + "', '" + hash_password + "', '-', '" + token + "')";
+		String sql = "INSERT INTO users (nama, username, password, token) VALUES ('" + user.nama + "', '" + user.username + "', '" + hash_password + "', '" + token + "')";
 		try {
 			db.update(sql);
 			return ResponseEntity.ok("Berhasil dimasukkan ke database.");

@@ -1,4 +1,4 @@
-package bnmo.bnmoapi.classes.common;
+package bnmo.bnmoapi.classes.users;
 
 public class User {
     public String nama;

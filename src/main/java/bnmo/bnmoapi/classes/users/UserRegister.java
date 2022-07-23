@@ -1,4 +1,4 @@
-package bnmo.bnmoapi.classes.auth;
+package bnmo.bnmoapi.classes.users;
 
 public class UserRegister {
     public String nama;
