@@ -50,7 +50,8 @@ public class Auth {
 				rs.getString("image"), 
 				rs.getString("role"),
 				rs.getString("token"), 
-				rs.getString("verified")
+				rs.getString("verified"),
+				rs.getFloat("saldo")
 			));
 			if (passwordEncoder.matches(user.password, user_db.password)) {
 				if (user_db.role.equals("admin") || (user_db.role.equals("customer") && user_db.verified.equals("true"))) {

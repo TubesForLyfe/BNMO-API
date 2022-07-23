@@ -6,7 +6,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
-import bnmo.bnmoapi.classes.users.User;
 import bnmo.bnmoapi.classes.users.UserInfo;
 
 @RestController
@@ -58,7 +56,8 @@ public class AccountVerify {
                 List<UserInfo> unverified_users = db.query(sql, (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),
-                    rs.getString("image")
+                    rs.getString("image"),
+                    rs.getFloat("saldo")
                 ));
                 return ResponseEntity.ok(unverified_users);
             }

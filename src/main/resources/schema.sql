@@ -6,6 +6,7 @@ CREATE TABLE users (
     role VARCHAR(500) NOT NULL DEFAULT 'customer',
     token VARCHAR(500) NOT NULL,
     verified VARCHAR(500) NOT NULL DEFAULT 'false',
+    saldo FLOAT NOT NULL DEFAULT 0.00,
     PRIMARY KEY (username)
 );
 

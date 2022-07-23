@@ -8,8 +8,9 @@ public class User {
     public String role;
     public String token;
     public String verified;
+    public float saldo;
 
-    public User(String nama, String username, String password, String image, String role, String token, String verified) {
+    public User(String nama, String username, String password, String image, String role, String token, String verified, float saldo) {
         this.nama = nama;
         this.username = username;
         this.password = password;
@@ -17,5 +18,6 @@ public class User {
         this.role = role;
         this.token = token;
         this.verified = verified;
+        this.saldo = saldo;
     }
 }
