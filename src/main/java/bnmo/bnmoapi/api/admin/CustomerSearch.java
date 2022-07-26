@@ -1,4 +1,6 @@
-package bnmo.bnmoapi.api.customer;
+package bnmo.bnmoapi.api.admin;
+
+import java.util.List;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,14 +20,14 @@ import bnmo.bnmoapi.classes.users.UserInfo;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-@RequestMapping("api/customer")
-public class Profile {
+@RequestMapping("api/admin")
+public class CustomerSearch {
     
     @Autowired
     private JdbcTemplate db;
 
-    @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(HttpServletRequest request) {
+    @GetMapping("/customer-search/{name_to_search}")
+    public ResponseEntity<?> searchCustomer(HttpServletRequest request, @PathVariable("name_to_search") String name_to_search) {
         String token = "";
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (header != null) {
@@ -45,18 +48,18 @@ public class Profile {
             }
         }
         
-        String sql = "SELECT role FROM users WHERE token = '" + token + "' AND verified = 'true'";
+        String sql = "SELECT role FROM users WHERE token = '" + token + "'";
         try {
             String role = db.queryForObject(sql, String.class);
-            if (role.equals("customer")) {
-                sql = "SELECT * FROM users WHERE token = '" + token + "'";
-                UserInfo user = db.queryForObject(sql, (rs, rowNum) -> new UserInfo(
+            if (role.equals("admin")) {
+                sql = "SELECT * FROM users WHERE verified = 'true' AND (nama LIKE '%" + name_to_search + "%' OR username LIKE '%" + name_to_search + "%')";
+                List<UserInfo> searched_users = db.query(sql, (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),
                     rs.getString("image"),
                     rs.getFloat("saldo")
                 ));
-                return ResponseEntity.ok(user);
+                return ResponseEntity.ok(searched_users);
             }
         } catch (Exception e) {}
         return ResponseEntity.ok(new Message("Unauthorized"));
