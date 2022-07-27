@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.role.Role;
 import bnmo.bnmoapi.classes.sql.users.read.UserDetailByUnverified;
 import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
 import bnmo.bnmoapi.classes.sql.users.update.UpdateVerifiedByUsername;
@@ -31,9 +32,10 @@ public class AccountVerify {
     @GetMapping("/unverified-customer")
     public ResponseEntity<?> getUnverifiedCustomer(HttpServletRequest request) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("admin")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isAdmin()) {
                 List<UserInfo> unverified_users = db.query(new UserDetailByUnverified().query(), (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),
@@ -49,9 +51,10 @@ public class AccountVerify {
     @GetMapping("/verify-customer/{username}")
     public ResponseEntity<?> verifyCustomer(HttpServletRequest request, @PathVariable("username") String username) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("admin")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isAdmin()) {
                 db.update(new UpdateVerifiedByUsername(username).query());
                 return ResponseEntity.ok(new Message("Customer " + username + " berhasil diverifikasi."));
             }

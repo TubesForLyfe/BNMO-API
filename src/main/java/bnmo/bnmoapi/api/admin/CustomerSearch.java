@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.role.Role;
 import bnmo.bnmoapi.classes.sql.users.read.UserDetailBySearch;
 import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
 import bnmo.bnmoapi.classes.token.Token;
@@ -30,9 +31,10 @@ public class CustomerSearch {
     @GetMapping("/customer-search/{name_to_search}")
     public ResponseEntity<?> searchCustomer(HttpServletRequest request, @PathVariable("name_to_search") String name_to_search) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("admin")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isAdmin()) {
                 List<UserInfo> searched_users = db.query(new UserDetailBySearch(name_to_search).query(), (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),

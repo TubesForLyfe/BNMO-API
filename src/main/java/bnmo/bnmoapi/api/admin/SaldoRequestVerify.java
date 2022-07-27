@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.role.Role;
 import bnmo.bnmoapi.classes.saldo.SaldoReqDetail;
 import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestDetailByUnverified;
 import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestJumlahByUsernameAndCreatedAt;
@@ -35,9 +36,10 @@ public class SaldoRequestVerify {
     @GetMapping("/unverified-saldo-request")
     public ResponseEntity<?> getUnverifiedSaldoRequest(HttpServletRequest request) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("admin")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isAdmin()) {
                 List<SaldoReqDetail> unverified_saldo_requests = db.query(new SaldoRequestDetailByUnverified().query(), (rs, rowNum) -> new SaldoReqDetail(
                     rs.getString("username"),
                     rs.getString("type"),
@@ -55,9 +57,10 @@ public class SaldoRequestVerify {
     @GetMapping("/accept-saldo-request/{username}/{created_at}")
     public ResponseEntity<?> acceptSaldoRequest(HttpServletRequest request, @PathVariable("username") String username, @PathVariable("created_at") String created_at) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("admin")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isAdmin()) {
                 try {
                     float jumlah = db.queryForObject(new SaldoRequestJumlahByUsernameAndCreatedAt(username, created_at).query(), Float.class);
                     String type = db.queryForObject(new SaldoRequestTypeByUsernameAndCreatedAt(username, created_at).query(), String.class);
@@ -84,9 +87,10 @@ public class SaldoRequestVerify {
     @GetMapping("/reject-saldo-request/{username}/{created_at}")
     public ResponseEntity<?> rejectSaldoRequest(HttpServletRequest request, @PathVariable("username") String username, @PathVariable("created_at") String created_at) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("admin")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isAdmin()) {
                 try {
                     float jumlah = db.queryForObject(new SaldoRequestJumlahByUsernameAndCreatedAt(username, created_at).query(), Float.class);
                     String type = db.queryForObject(new SaldoRequestTypeByUsernameAndCreatedAt(username, created_at).query(), String.class);

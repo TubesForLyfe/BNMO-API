@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.role.Role;
 import bnmo.bnmoapi.classes.saldo.SaldoTf;
 import bnmo.bnmoapi.classes.saldo.SaldoTfDetail;
 import bnmo.bnmoapi.classes.sql.transaction.insert.TransactionInsert;
@@ -38,9 +39,10 @@ public class SaldoTransfer {
     @PostMapping("/saldo-transfer")
     public ResponseEntity<?> transferSaldo(HttpServletRequest request, @RequestBody SaldoTf saldo) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("customer")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isCustomer()) {
                 try {
                     String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
                     if (username.equals(saldo.username)) {
@@ -81,9 +83,10 @@ public class SaldoTransfer {
     @GetMapping("/saldo-transfer-history")
     public ResponseEntity<?> getRequestHistory(HttpServletRequest request) {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("customer")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isCustomer()) {
                 try {
                     String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
                     List<SaldoTfDetail> transferHistory = db.query(new TransactionDetailByUsername(username).query(), (rs, rowNum) -> new SaldoTfDetail(

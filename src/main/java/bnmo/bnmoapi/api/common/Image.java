@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import bnmo.bnmoapi.classes.role.Role;
 import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
 import bnmo.bnmoapi.classes.sql.users.read.UserUsernameByImage;
 import bnmo.bnmoapi.classes.sql.users.read.UserUsernameByToken;
@@ -40,9 +41,10 @@ public class Image {
     @GetMapping(value = "/{filename}", produces = MediaType.IMAGE_JPEG_VALUE)
     public @ResponseBody byte[] getImage(HttpServletRequest request, @PathVariable("filename") String filename) throws IOException {
         Token token = new Token(request);
+        Role role = new Role(token);
         try {
-            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
-            if (role.equals("customer")) {
+            role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));
+            if (role.isCustomer()) {
                 String username_token = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
                 String username_image = db.queryForObject(new UserUsernameByImage(filename).query(), String.class);
                 if (!username_token.equals(username_image)) {
