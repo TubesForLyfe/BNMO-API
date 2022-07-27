@@ -19,6 +19,7 @@ import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestDetailByUnverifi
 import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestJumlahByUsernameAndCreatedAt;
 import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestTypeByUsernameAndCreatedAt;
 import bnmo.bnmoapi.classes.sql.saldo_requests.update.UpdateStatusByUsernameAndCreatedAt;
+import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
 import bnmo.bnmoapi.classes.sql.users.read.UserSaldoByUsername;
 import bnmo.bnmoapi.classes.sql.users.update.UpdateSaldoByUsername;
 import bnmo.bnmoapi.classes.token.Token;
@@ -34,9 +35,8 @@ public class SaldoRequestVerify {
     @GetMapping("/unverified-saldo-request")
     public ResponseEntity<?> getUnverifiedSaldoRequest(HttpServletRequest request) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("admin")) {
                 List<SaldoReqDetail> unverified_saldo_requests = db.query(new SaldoRequestDetailByUnverified().query(), (rs, rowNum) -> new SaldoReqDetail(
                     rs.getString("username"),
@@ -55,9 +55,8 @@ public class SaldoRequestVerify {
     @GetMapping("/accept-saldo-request/{username}/{created_at}")
     public ResponseEntity<?> acceptSaldoRequest(HttpServletRequest request, @PathVariable("username") String username, @PathVariable("created_at") String created_at) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("admin")) {
                 try {
                     float jumlah = db.queryForObject(new SaldoRequestJumlahByUsernameAndCreatedAt(username, created_at).query(), Float.class);
@@ -85,9 +84,8 @@ public class SaldoRequestVerify {
     @GetMapping("/reject-saldo-request/{username}/{created_at}")
     public ResponseEntity<?> rejectSaldoRequest(HttpServletRequest request, @PathVariable("username") String username, @PathVariable("created_at") String created_at) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("admin")) {
                 try {
                     float jumlah = db.queryForObject(new SaldoRequestJumlahByUsernameAndCreatedAt(username, created_at).query(), Float.class);

@@ -20,6 +20,7 @@ import bnmo.bnmoapi.classes.saldo.SaldoReq;
 import bnmo.bnmoapi.classes.saldo.SaldoReqDetail;
 import bnmo.bnmoapi.classes.sql.saldo_requests.insert.SaldoRequestInsert;
 import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestDetailByUsername;
+import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
 import bnmo.bnmoapi.classes.sql.users.read.UserUsernameByToken;
 import bnmo.bnmoapi.classes.token.Token;
 
@@ -34,9 +35,8 @@ public class SaldoRequest {
     @PostMapping("/saldo-request")
     public ResponseEntity<?> requestSaldo(HttpServletRequest request, @RequestBody SaldoReq saldo) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "' AND verified = 'true'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("customer")) {
                 try {
                     String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
@@ -59,9 +59,8 @@ public class SaldoRequest {
     @GetMapping("/saldo-request-history")
     public ResponseEntity<?> getRequestHistory(HttpServletRequest request) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "' AND verified = 'true'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("customer")) {
                 try {
                     String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);

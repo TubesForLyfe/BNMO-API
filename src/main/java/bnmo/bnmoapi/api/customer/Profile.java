@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
 import bnmo.bnmoapi.classes.sql.users.read.UserDetailByToken;
+import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
 import bnmo.bnmoapi.classes.token.Token;
 import bnmo.bnmoapi.classes.users.UserInfo;
 
@@ -26,9 +27,8 @@ public class Profile {
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(HttpServletRequest request) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "' AND verified = 'true'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("customer")) {
                 UserInfo user = db.queryForObject(new UserDetailByToken(token.value).query(), (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),

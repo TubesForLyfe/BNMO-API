@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
 import bnmo.bnmoapi.classes.sql.users.read.UserDetailByUnverified;
+import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
 import bnmo.bnmoapi.classes.sql.users.update.UpdateVerifiedByUsername;
 import bnmo.bnmoapi.classes.token.Token;
 import bnmo.bnmoapi.classes.users.UserInfo;
@@ -30,9 +31,8 @@ public class AccountVerify {
     @GetMapping("/unverified-customer")
     public ResponseEntity<?> getUnverifiedCustomer(HttpServletRequest request) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("admin")) {
                 List<UserInfo> unverified_users = db.query(new UserDetailByUnverified().query(), (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
@@ -49,9 +49,8 @@ public class AccountVerify {
     @GetMapping("/verify-customer/{username}")
     public ResponseEntity<?> verifyCustomer(HttpServletRequest request, @PathVariable("username") String username) {
         Token token = new Token(request);
-        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
-            String role = db.queryForObject(sql, String.class);
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
             if (role.equals("admin")) {
                 db.update(new UpdateVerifiedByUsername(username).query());
                 return ResponseEntity.ok(new Message("Customer " + username + " berhasil diverifikasi."));
