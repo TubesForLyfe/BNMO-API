@@ -18,6 +18,12 @@ import org.springframework.web.client.RestTemplate;
 import bnmo.bnmoapi.classes.message.Message;
 import bnmo.bnmoapi.classes.saldo.SaldoTf;
 import bnmo.bnmoapi.classes.saldo.SaldoTfDetail;
+import bnmo.bnmoapi.classes.sql.transaction.insert.TransactionInsert;
+import bnmo.bnmoapi.classes.sql.transaction.read.TransactionDetailByUsername;
+import bnmo.bnmoapi.classes.sql.users.read.ExistUsername;
+import bnmo.bnmoapi.classes.sql.users.read.UserSaldoByUsername;
+import bnmo.bnmoapi.classes.sql.users.read.UserUsernameByToken;
+import bnmo.bnmoapi.classes.sql.users.update.UpdateSaldoByUsername;
 import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
@@ -35,12 +41,13 @@ public class SaldoTransfer {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT username FROM users WHERE token = '" + token.value + "'";
                 try {
-                    String username = db.queryForObject(sql, String.class);
-                    sql = "SELECT username FROM users WHERE username = '" + saldo.username + "' AND username <> '" + username + "' AND verified = 'true'";
+                    String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
+                    if (username.equals(saldo.username)) {
+                        return ResponseEntity.ok(new Message("Username tujuan tidak valid"));
+                    }
                     try {
-                        db.queryForObject(sql, String.class);
+                        db.queryForObject(new ExistUsername(saldo.username).query(), String.class);
                         float IDR_value = 1;
                         if (!saldo.currency.equals("IDR")) {
                             String url = "http://127.0.0.1:8080/api/saldo-conversion/" + saldo.currency;
@@ -48,24 +55,17 @@ public class SaldoTransfer {
                             IDR_value = restTemplate.getForObject(url, Float.class);
                         }
                         float transfer_saldo = saldo.amount * IDR_value;
-                        sql = "SELECT saldo FROM users WHERE username = '" + username + "'";
                         try {
-                            float current_saldo = db.queryForObject(sql, Float.class);
-                            if (current_saldo < transfer_saldo) {
+                            float my_saldo = db.queryForObject(new UserSaldoByUsername(username).query(), Float.class);
+                            if (my_saldo < transfer_saldo) {
                                 return ResponseEntity.ok(new Message("Saldo tidak cukup"));
                             } else {
-                                sql = "INSERT INTO transaction VALUES ('" + username + "', '" + saldo.username + "', '" + transfer_saldo  + "')";
-                                try {
-                                    db.update(sql);
-                                } catch (Exception e) {}
-                                sql = "UPDATE users SET saldo = saldo - " + transfer_saldo + " WHERE username = '" + username + "'";
-                                try {
-                                    db.update(sql);
-                                } catch (Exception e) {}
-                                sql = "UPDATE users SET saldo = saldo + " + transfer_saldo + " WHERE username = '" + saldo.username + "'";
-                                try {
-                                    db.update(sql);
-                                } catch (Exception e) {}
+                                my_saldo = my_saldo - transfer_saldo;
+                                float other_saldo = db.queryForObject(new UserSaldoByUsername(saldo.username).query(), Float.class) + transfer_saldo;
+
+                                db.update(new TransactionInsert(username, saldo.username, transfer_saldo).query());
+                                db.update(new UpdateSaldoByUsername(my_saldo, username).query());
+                                db.update(new UpdateSaldoByUsername(other_saldo, saldo.username).query());
                                 return ResponseEntity.ok("Transfer saldo ke rekening " + saldo.username + " berhasil.");
                             }
                         } catch (Exception e) {}
@@ -85,11 +85,9 @@ public class SaldoTransfer {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT username FROM users WHERE token = '" + token.value + "'";
                 try {
-                    String username = db.queryForObject(sql, String.class);
-                    sql = "SELECT * FROM transaction WHERE from_username = '" + username + "' OR to_username = '" + username + "' ORDER BY created_at DESC";
-                    List<SaldoTfDetail> transferHistory = db.query(sql, (rs, rowNum) -> new SaldoTfDetail(
+                    String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
+                    List<SaldoTfDetail> transferHistory = db.query(new TransactionDetailByUsername(username).query(), (rs, rowNum) -> new SaldoTfDetail(
                         rs.getString("from_username"),
                         rs.getString("to_username"),
                         rs.getFloat("jumlah"),

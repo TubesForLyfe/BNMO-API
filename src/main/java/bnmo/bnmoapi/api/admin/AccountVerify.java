@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.sql.users.read.UserDetailByUnverified;
+import bnmo.bnmoapi.classes.sql.users.update.UpdateVerifiedByUsername;
 import bnmo.bnmoapi.classes.token.Token;
 import bnmo.bnmoapi.classes.users.UserInfo;
 
@@ -32,8 +34,7 @@ public class AccountVerify {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
-                sql = "SELECT * FROM users WHERE verified = 'false'";
-                List<UserInfo> unverified_users = db.query(sql, (rs, rowNum) -> new UserInfo(
+                List<UserInfo> unverified_users = db.query(new UserDetailByUnverified().query(), (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),
                     rs.getString("image"),
@@ -52,10 +53,7 @@ public class AccountVerify {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
-                sql = "UPDATE users SET verified = 'true' WHERE username = '" + username + "'";
-                try {
-                    db.update(sql);
-                } catch (Exception e) {}
+                db.update(new UpdateVerifiedByUsername(username).query());
                 return ResponseEntity.ok(new Message("Customer " + username + " berhasil diverifikasi."));
             }
         } catch (Exception e) {}

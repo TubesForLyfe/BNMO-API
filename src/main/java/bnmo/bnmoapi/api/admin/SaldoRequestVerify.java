@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
 import bnmo.bnmoapi.classes.saldo.SaldoReqDetail;
+import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestDetailByUnverified;
+import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestJumlahByUsernameAndCreatedAt;
+import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestTypeByUsernameAndCreatedAt;
+import bnmo.bnmoapi.classes.sql.saldo_requests.update.UpdateStatusByUsernameAndCreatedAt;
+import bnmo.bnmoapi.classes.sql.users.read.UserSaldoByUsername;
+import bnmo.bnmoapi.classes.sql.users.update.UpdateSaldoByUsername;
 import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
@@ -32,8 +38,7 @@ public class SaldoRequestVerify {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
-                sql = "SELECT * FROM saldo_requests WHERE status = '-' ORDER BY created_at ASC";
-                List<SaldoReqDetail> unverified_saldo_requests = db.query(sql, (rs, rowNum) -> new SaldoReqDetail(
+                List<SaldoReqDetail> unverified_saldo_requests = db.query(new SaldoRequestDetailByUnverified().query(), (rs, rowNum) -> new SaldoReqDetail(
                     rs.getString("username"),
                     rs.getString("type"),
                     rs.getFloat("jumlah"),
@@ -54,17 +59,11 @@ public class SaldoRequestVerify {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
-                sql = "SELECT jumlah FROM saldo_requests WHERE username = '" + username + "' AND created_at = '" + created_at + "'";
                 try {
-                    float jumlah = db.queryForObject(sql, Float.class);
-                    sql = "SELECT type FROM saldo_requests WHERE username = '" + username + "' AND created_at = '" + created_at + "'";
-                    String type = db.queryForObject(sql, String.class);
-                    sql = "SELECT saldo FROM users WHERE username = '" + username + "'";
-                    float saldo = db.queryForObject(sql, Float.class);
-                    sql = "UPDATE saldo_requests SET status = 'accepted', verified_at = CURRENT_TIMESTAMP WHERE username = '" + username + "' AND created_at = '" + created_at + "'";
-                    try {
-                        db.update(sql);
-                    } catch (Exception e) {}
+                    float jumlah = db.queryForObject(new SaldoRequestJumlahByUsernameAndCreatedAt(username, created_at).query(), Float.class);
+                    String type = db.queryForObject(new SaldoRequestTypeByUsernameAndCreatedAt(username, created_at).query(), String.class);
+                    float saldo = db.queryForObject(new UserSaldoByUsername(username).query(), Float.class);
+                    db.update(new UpdateStatusByUsernameAndCreatedAt("accepted", username, created_at).query());
                     float new_saldo = 0;
                     String message_type = "penambahan";
                     if (type.equals("tambah")) {
@@ -75,10 +74,7 @@ public class SaldoRequestVerify {
                         }
                         message_type = "pengurangan";
                     }
-                    sql = "UPDATE users SET saldo = " + new_saldo + " WHERE username = '" + username + "'";
-                    try {
-                        db.update(sql);
-                    } catch (Exception e) {}
+                    db.update(new UpdateSaldoByUsername(new_saldo, username).query());
                     return ResponseEntity.ok(new Message("Request " + message_type + " saldo " + username + " sebesar " + jumlah + " berhasil diterima."));
                 } catch (Exception e) {}
             }
@@ -93,15 +89,10 @@ public class SaldoRequestVerify {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
-                sql = "SELECT jumlah FROM saldo_requests WHERE username = '" + username + "' AND created_at = '" + created_at + "'";
                 try {
-                    float jumlah = db.queryForObject(sql, Float.class);
-                    sql = "SELECT type FROM saldo_requests WHERE username = '" + username + "' AND created_at = '" + created_at + "'";
-                    String type = db.queryForObject(sql, String.class);
-                    sql = "UPDATE saldo_requests SET status = 'rejected', verified_at = CURRENT_TIMESTAMP WHERE username = '" + username + "' AND created_at = '" + created_at + "'";
-                    try {
-                        db.update(sql);
-                    } catch (Exception e) {}
+                    float jumlah = db.queryForObject(new SaldoRequestJumlahByUsernameAndCreatedAt(username, created_at).query(), Float.class);
+                    String type = db.queryForObject(new SaldoRequestTypeByUsernameAndCreatedAt(username, created_at).query(), String.class);
+                    db.update(new UpdateStatusByUsernameAndCreatedAt("rejected", username, created_at).query());
                     String message_type = "penambahan";
                     if (type.equals("kurang")) {
                         message_type = "pengurangan";

@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import bnmo.bnmoapi.classes.sql.users.update.UpdateImageByUsername;
+
 @RestController
 @CrossOrigin
 @RequestMapping("api/image")
@@ -42,9 +44,8 @@ public class Image {
             OutputStream os = new FileOutputStream(path);
             os.write(file.getBytes());
             os.close();
-            String sql = "UPDATE users SET image = '" + filename + "' WHERE username = '" + username + "'";
             try {
-                db.update(sql);
+                db.update(new UpdateImageByUsername(filename, username).query());
             } catch (Exception e) {}
         } catch (Exception e) {}
     }

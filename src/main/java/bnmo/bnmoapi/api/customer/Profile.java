@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.sql.users.read.UserDetailByToken;
 import bnmo.bnmoapi.classes.token.Token;
 import bnmo.bnmoapi.classes.users.UserInfo;
 
@@ -29,8 +30,7 @@ public class Profile {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT * FROM users WHERE token = '" + token.value + "'";
-                UserInfo user = db.queryForObject(sql, (rs, rowNum) -> new UserInfo(
+                UserInfo user = db.queryForObject(new UserDetailByToken(token.value).query(), (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),
                     rs.getString("image"),

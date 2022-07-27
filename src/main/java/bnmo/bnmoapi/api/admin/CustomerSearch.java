@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.sql.users.read.UserDetailBySearch;
 import bnmo.bnmoapi.classes.token.Token;
 import bnmo.bnmoapi.classes.users.UserInfo;
 
@@ -32,8 +33,7 @@ public class CustomerSearch {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
-                sql = "SELECT * FROM users WHERE verified = 'true' AND (nama LIKE '%" + name_to_search + "%' OR username LIKE '%" + name_to_search + "%')";
-                List<UserInfo> searched_users = db.query(sql, (rs, rowNum) -> new UserInfo(
+                List<UserInfo> searched_users = db.query(new UserDetailBySearch(name_to_search).query(), (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),
                     rs.getString("image"),

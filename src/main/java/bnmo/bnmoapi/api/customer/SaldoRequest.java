@@ -18,6 +18,9 @@ import org.springframework.web.client.RestTemplate;
 import bnmo.bnmoapi.classes.message.Message;
 import bnmo.bnmoapi.classes.saldo.SaldoReq;
 import bnmo.bnmoapi.classes.saldo.SaldoReqDetail;
+import bnmo.bnmoapi.classes.sql.saldo_requests.insert.SaldoRequestInsert;
+import bnmo.bnmoapi.classes.sql.saldo_requests.read.SaldoRequestDetailByUsername;
+import bnmo.bnmoapi.classes.sql.users.read.UserUsernameByToken;
 import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
@@ -35,18 +38,16 @@ public class SaldoRequest {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT username FROM users WHERE token = '" + token.value + "'";
                 try {
-                    String username = db.queryForObject(sql, String.class);
+                    String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
                     float IDR_value = 1;
                     if (!saldo.currency.equals("IDR")) {
                         String url = "http://127.0.0.1:8080/api/saldo-conversion/" + saldo.currency;
                         RestTemplate restTemplate = new RestTemplate();
                         IDR_value = restTemplate.getForObject(url, Float.class);
                     }
-                    sql = "INSERT INTO saldo_requests VALUES ('" + username + "', '" + saldo.type + "', '" + saldo.amount * IDR_value  + "')";
                     try {
-                        db.update(sql);
+                        db.update(new SaldoRequestInsert(username, saldo.type, saldo.amount * IDR_value).query());
                     } catch (Exception e) {}
                     return ResponseEntity.ok(new Message("Request saldo berhasil. Permintaan Anda akan segera diverifikasi."));
                 } catch (Exception e) {}
@@ -62,11 +63,9 @@ public class SaldoRequest {
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT username FROM users WHERE token = '" + token.value + "'";
                 try {
-                    String username = db.queryForObject(sql, String.class);
-                    sql = "SELECT * FROM saldo_requests WHERE username = '" + username + "' ORDER BY status ASC, created_at DESC";
-                    List<SaldoReqDetail> requestHistory = db.query(sql, (rs, rowNum) -> new SaldoReqDetail(
+                    String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
+                    List<SaldoReqDetail> requestHistory = db.query(new SaldoRequestDetailByUsername(username).query(), (rs, rowNum) -> new SaldoReqDetail(
                         rs.getString("username"),
                         rs.getString("type"),
                         rs.getFloat("jumlah"),

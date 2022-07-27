@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.sql.users.insert.UserInsert;
+import bnmo.bnmoapi.classes.sql.users.read.UserDetailByUsername;
 import bnmo.bnmoapi.classes.users.User;
 import bnmo.bnmoapi.classes.users.UserLogin;
 import bnmo.bnmoapi.classes.users.UserRegister;
@@ -29,9 +31,8 @@ public class Auth {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		String hash_password = passwordEncoder.encode(user.password);
 		String token = Jwts.builder().setSubject(user.username).compact();
-		String sql = "INSERT INTO users (nama, username, password, token) VALUES ('" + user.nama + "', '" + user.username + "', '" + hash_password + "', '" + token + "')";
 		try {
-			db.update(sql);
+			db.update(new UserInsert(user.nama, user.username, hash_password, token).query());
 			return ResponseEntity.ok("Berhasil dimasukkan ke database.");
 		} catch (Exception e) {
 			return ResponseEntity.ok(new Message("Username tidak valid."));
@@ -41,9 +42,8 @@ public class Auth {
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody UserLogin user) {	
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		String sql = "SELECT * FROM users WHERE username = '" + user.username + "'";
 		try {
-			User user_db = db.queryForObject(sql, (rs, rowNum) -> new User (
+			User user_db = db.queryForObject(new UserDetailByUsername(user.username).query(), (rs, rowNum) -> new User (
 				rs.getString("nama"), 
 				rs.getString("username"), 
 				rs.getString("password"), 
