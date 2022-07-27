@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
 import bnmo.bnmoapi.classes.saldo.SaldoReqDetail;
+import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -28,27 +29,8 @@ public class SaldoRequestVerify {
 
     @GetMapping("/unverified-saldo-request")
     public ResponseEntity<?> getUnverifiedSaldoRequest(HttpServletRequest request) {
-        String token = "";
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header != null) {
-            if (header.substring(0, 6).equals("Bearer")) {
-                token = header.substring(7);
-            }
-        } else {
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("bnmo_token")) {
-                        token = cookie.getValue();
-                        break;
-                    }
-                }
-            } else {
-                return ResponseEntity.ok(new Message("Unauthorized"));
-            }
-        }
-        
-        String sql = "SELECT role FROM users WHERE token = '" + token + "'";
+        Token token = new Token(request);
+        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
@@ -69,27 +51,8 @@ public class SaldoRequestVerify {
 
     @GetMapping("/accept-saldo-request/{username}/{created_at}")
     public ResponseEntity<?> acceptSaldoRequest(HttpServletRequest request, @PathVariable("username") String username, @PathVariable("created_at") String created_at) {
-        String token = "";
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header != null) {
-            if (header.substring(0, 6).equals("Bearer")) {
-                token = header.substring(7);
-            }
-        } else {
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("bnmo_token")) {
-                        token = cookie.getValue();
-                        break;
-                    }
-                }
-            } else {
-                return ResponseEntity.ok(new Message("Unauthorized"));
-            }
-        }
-        
-        String sql = "SELECT role FROM users WHERE token = '" + token + "'";
+        Token token = new Token(request);
+        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {
@@ -127,27 +90,8 @@ public class SaldoRequestVerify {
 
     @GetMapping("/reject-saldo-request/{username}/{created_at}")
     public ResponseEntity<?> rejectSaldoRequest(HttpServletRequest request, @PathVariable("username") String username, @PathVariable("created_at") String created_at) {
-        String token = "";
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header != null) {
-            if (header.substring(0, 6).equals("Bearer")) {
-                token = header.substring(7);
-            }
-        } else {
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("bnmo_token")) {
-                        token = cookie.getValue();
-                        break;
-                    }
-                }
-            } else {
-                return ResponseEntity.ok(new Message("Unauthorized"));
-            }
-        }
-        
-        String sql = "SELECT role FROM users WHERE token = '" + token + "'";
+        Token token = new Token(request);
+        String sql = "SELECT role FROM users WHERE token = '" + token.value + "'";
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("admin")) {

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bnmo.bnmoapi.classes.message.Message;
+import bnmo.bnmoapi.classes.token.Token;
 import bnmo.bnmoapi.classes.users.UserInfo;
 
 @RestController
@@ -25,31 +26,12 @@ public class Profile {
 
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(HttpServletRequest request) {
-        String token = "";
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header != null) {
-            if (header.substring(0, 6).equals("Bearer")) {
-                token = header.substring(7);
-            }
-        } else {
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("bnmo_token")) {
-                        token = cookie.getValue();
-                        break;
-                    }
-                }
-            } else {
-                return ResponseEntity.ok(new Message("Unauthorized"));
-            }
-        }
-        
-        String sql = "SELECT role FROM users WHERE token = '" + token + "' AND verified = 'true'";
+        Token token = new Token(request);
+        String sql = "SELECT role FROM users WHERE token = '" + token.value + "' AND verified = 'true'";
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT * FROM users WHERE token = '" + token + "'";
+                sql = "SELECT * FROM users WHERE token = '" + token.value + "'";
                 UserInfo user = db.queryForObject(sql, (rs, rowNum) -> new UserInfo(
                     rs.getString("nama"),
                     rs.getString("username"),

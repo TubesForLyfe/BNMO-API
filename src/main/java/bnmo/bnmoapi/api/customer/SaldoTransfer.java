@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import bnmo.bnmoapi.classes.message.Message;
 import bnmo.bnmoapi.classes.saldo.SaldoTf;
 import bnmo.bnmoapi.classes.saldo.SaldoTfDetail;
+import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -31,31 +32,12 @@ public class SaldoTransfer {
 
     @PostMapping("/saldo-transfer")
     public ResponseEntity<?> transferSaldo(HttpServletRequest request, @RequestBody SaldoTf saldo) {
-        String token = "";
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header != null) {
-            if (header.substring(0, 6).equals("Bearer")) {
-                token = header.substring(7);
-            }
-        } else {
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("bnmo_token")) {
-                        token = cookie.getValue();
-                        break;
-                    }
-                }
-            } else {
-                return ResponseEntity.ok(new Message("Unauthorized"));
-            }
-        }
-        
-        String sql = "SELECT role FROM users WHERE token = '" + token + "' AND verified = 'true'";
+        Token token = new Token(request);
+        String sql = "SELECT role FROM users WHERE token = '" + token.value + "' AND verified = 'true'";
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT username FROM users WHERE token = '" + token + "'";
+                sql = "SELECT username FROM users WHERE token = '" + token.value + "'";
                 try {
                     String username = db.queryForObject(sql, String.class);
                     sql = "SELECT username FROM users WHERE username = '" + saldo.username + "' AND username <> '" + username + "' AND verified = 'true'";
@@ -100,31 +82,12 @@ public class SaldoTransfer {
 
     @GetMapping("/saldo-transfer-history")
     public ResponseEntity<?> getRequestHistory(HttpServletRequest request) {
-        String token = "";
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header != null) {
-            if (header.substring(0, 6).equals("Bearer")) {
-                token = header.substring(7);
-            }
-        } else {
-            Cookie[] cookies = request.getCookies();
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("bnmo_token")) {
-                        token = cookie.getValue();
-                        break;
-                    }
-                }
-            } else {
-                return ResponseEntity.ok(new Message("Unauthorized"));
-            }
-        }
-        
-        String sql = "SELECT role FROM users WHERE token = '" + token + "' AND verified = 'true'";
+        Token token = new Token(request);
+        String sql = "SELECT role FROM users WHERE token = '" + token.value + "' AND verified = 'true'";
         try {
             String role = db.queryForObject(sql, String.class);
             if (role.equals("customer")) {
-                sql = "SELECT username FROM users WHERE token = '" + token + "'";
+                sql = "SELECT username FROM users WHERE token = '" + token.value + "'";
                 try {
                     String username = db.queryForObject(sql, String.class);
                     sql = "SELECT * FROM transaction WHERE from_username = '" + username + "' OR to_username = '" + username + "' ORDER BY created_at DESC";
