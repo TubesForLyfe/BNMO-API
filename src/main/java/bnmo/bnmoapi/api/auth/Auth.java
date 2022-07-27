@@ -19,7 +19,7 @@ import bnmo.bnmoapi.classes.users.UserRegister;
 import io.jsonwebtoken.*;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RequestMapping("api")
 public class Auth {
 

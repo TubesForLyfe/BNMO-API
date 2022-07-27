@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,10 +21,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import bnmo.bnmoapi.classes.sql.users.read.UserRoleByToken;
+import bnmo.bnmoapi.classes.sql.users.read.UserUsernameByImage;
+import bnmo.bnmoapi.classes.sql.users.read.UserUsernameByToken;
 import bnmo.bnmoapi.classes.sql.users.update.UpdateImageByUsername;
+import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RequestMapping("api/image")
 public class Image {
 
@@ -32,8 +38,20 @@ public class Image {
     private JdbcTemplate db;
 
     @GetMapping(value = "/{filename}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public @ResponseBody byte[] getImage(@PathVariable("filename") String filename) throws IOException {
-        return IOUtils.toByteArray(getClass().getResourceAsStream(IMAGE_ROOT_PATH + filename));
+    public @ResponseBody byte[] getImage(HttpServletRequest request, @PathVariable("filename") String filename) throws IOException {
+        Token token = new Token(request);
+        try {
+            String role = db.queryForObject(new UserRoleByToken(token.value).query(), String.class);
+            if (role.equals("customer")) {
+                String username_token = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
+                String username_image = db.queryForObject(new UserUsernameByImage(filename).query(), String.class);
+                if (!username_token.equals(username_image)) {
+                    return null;
+                }
+            }
+            return IOUtils.toByteArray(getClass().getResourceAsStream(IMAGE_ROOT_PATH + filename));
+        } catch (Exception e) {}
+        return null;
     }
 
     @PostMapping("/{username}/upload")
