@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  db:
+    container_name: BNMO_DB
+    build:
+      context: ./docker_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: bnmo_db
+      POSTGRES_USER: bnmo
+      POSTGRES_PASSWORD: bnmo
+  app:
+    container_name: BNMO_API
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bnmo_db
+      SPRING_DATASOURCE_USERNAME: bnmo
+      SPRING_DATASOURCE_PASSWORD: bnmo
+    depends_on:
+      - db

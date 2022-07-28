@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,16 +54,24 @@ public class Image {
                     return null;
                 }
             }
-            return IOUtils.toByteArray(getClass().getResourceAsStream(IMAGE_ROOT_PATH + filename));
+            return FileUtils.readFileToByteArray(new File("customer-photos/" + filename));
         } catch (Exception e) {}
         return null;
     }
 
     @PostMapping("/{username}/upload")
     public void uploadImage(@RequestParam MultipartFile file, @PathVariable("username") String username) {
+        try {
+            Path uploadPath = Paths.get("customer-photos");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+        } catch (Exception e) {
+            
+        }
         String filename = username + "-" + file.getOriginalFilename();
         try {
-            File path = new File("src/main/resources/images/" + filename);
+            File path = new File("customer-photos/" + filename);
             OutputStream os = new FileOutputStream(path);
             os.write(file.getBytes());
             os.close();

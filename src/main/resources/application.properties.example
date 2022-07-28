@@ -1,6 +1,6 @@
-spring.datasource.url=
-spring.datasource.username=
-spring.datasource.password=
+spring.datasource.url=jdbc:postgresql://db:5432/bnmo_db
+spring.datasource.username=bnmo
+spring.datasource.password=bnmo
 
 apilayer.url=https://api.apilayer.com
 apilayer.apikey=
