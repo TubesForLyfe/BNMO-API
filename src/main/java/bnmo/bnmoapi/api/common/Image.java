@@ -66,9 +66,8 @@ public class Image {
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
-        } catch (Exception e) {
-            
-        }
+        } catch (Exception e) {}
+        
         String filename = username + "-" + file.getOriginalFilename();
         try {
             File path = new File("customer-photos/" + filename);
