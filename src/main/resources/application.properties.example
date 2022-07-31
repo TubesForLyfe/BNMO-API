@@ -6,3 +6,5 @@ spring.mvc.pathmatch.matching-strategy = ANT_PATH_MATCHER
 
 apilayer.url=https://api.apilayer.com
 apilayer.apikey=
+
+bnmoapi.url=

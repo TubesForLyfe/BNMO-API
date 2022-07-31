@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -33,6 +34,9 @@ public class SaldoRequest {
     @Autowired
     private JdbcTemplate db;
 
+    @Value("${bnmoapi.url}")
+    private String api_url;
+
     @PostMapping("/saldo-request")
     public ResponseEntity<?> requestSaldo(HttpServletRequest request, @RequestBody SaldoReq saldo) {
         Token token = new Token(request);
@@ -44,7 +48,7 @@ public class SaldoRequest {
                     String username = db.queryForObject(new UserUsernameByToken(token.value).query(), String.class);
                     float IDR_value = 1;
                     if (!saldo.currency.equals("IDR")) {
-                        String url = "http://127.0.0.1:8080/api/saldo-conversion/" + saldo.currency;
+                        String url = api_url + "/api/saldo-conversion/" + saldo.currency;
                         RestTemplate restTemplate = new RestTemplate();
                         IDR_value = restTemplate.getForObject(url, Float.class);
                     }
