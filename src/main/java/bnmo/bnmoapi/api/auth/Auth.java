@@ -1,5 +1,7 @@
 package bnmo.bnmoapi.api.auth;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,7 +21,7 @@ import bnmo.bnmoapi.classes.users.UserRegister;
 import io.jsonwebtoken.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "https://bnmo.herokuapp.com"}, allowCredentials = "true")
 @RequestMapping("api")
 public class Auth {
 
@@ -40,7 +42,7 @@ public class Auth {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody UserLogin user) {	
+	public ResponseEntity<?> login(@RequestBody UserLogin user, HttpServletResponse response) {	
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		try {
 			User user_db = db.queryForObject(new UserDetailByUsername(user.username).query(), (rs, rowNum) -> new User (

@@ -26,7 +26,7 @@ import bnmo.bnmoapi.classes.sql.users.update.UpdateSaldoByUsername;
 import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "https://bnmo.herokuapp.com"}, allowCredentials = "true")
 @RequestMapping("api/admin")
 public class SaldoRequestVerify {
     

@@ -32,7 +32,7 @@ import bnmo.bnmoapi.classes.sql.users.update.UpdateImageByUsername;
 import bnmo.bnmoapi.classes.token.Token;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "https://bnmo.herokuapp.com"}, allowCredentials = "true")
 @RequestMapping("api/image")
 public class Image {
 
@@ -67,7 +67,7 @@ public class Image {
                 Files.createDirectories(uploadPath);
             }
         } catch (Exception e) {}
-        
+
         String filename = username + "-" + file.getOriginalFilename();
         try {
             File path = new File("customer-photos/" + filename);
