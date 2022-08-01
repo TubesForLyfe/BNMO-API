@@ -9,8 +9,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '17'
-      - name: Run Tests
-        run: mvn -U clean install
       - name: Add remote origin
         run: |
           git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/${{ secrets.HEROKU_APP_NAME }}.git
