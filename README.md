@@ -65,5 +65,5 @@ Tech Stack yang digunakan adalah <strong>Java Spring Boot dan PostgreSQL</strong
 ## Fitur Tambahan
 
 - Customer
-<br>
+
 Melihat riwayat request penambahan/pengurangan saldo beserta status dan waktu verifikasi dari request tersebut
