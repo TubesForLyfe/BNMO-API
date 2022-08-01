@@ -5,7 +5,7 @@
 - Siapkan file `application.properties` dengan mengkopi template dari file `application.properties.example` dan value `apilayer.apikey` diisi dengan apikey yang didapat <a href="https://apilayer.com/account">di sini</a>. (Apabila ingin menjalankan aplikasi tanpa menggunakan database Docker, silahkan mengganti value setiap `spring.datasource`).
 
 - Untuk mendapatkan file .jar dari aplikasi
-<br>
+
 `> ./mvnw clean package`
 
 - Jika menggunakan Docker, jalankan perintah berikut pada terminal.
