@@ -40,7 +40,7 @@ Abstract Factory adalah dessign patern creational yang menghasilkan family dari 
 
 ## Tech Stack yang digunakan
 
-Tech Stack yang digunakan adalah <strong>Java Spring Boot</strong> dengan versi Java 17 dan Spring Boot 2.7.2.
+Tech Stack yang digunakan adalah <strong>Java Spring Boot dan PostgreSQL</strong> dengan versi Java 17 dan Spring Boot 2.7.2.
 
 ## Cara Menggunakan Sistem
 
