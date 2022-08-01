@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -41,9 +39,9 @@ public class Image {
     @Autowired
     private JdbcTemplate db;
 
-    @GetMapping(value = "/{filename}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public @ResponseBody byte[] getImage(HttpServletRequest request, @PathVariable("filename") String filename) throws IOException {
-        Token token = new Token(request);
+    @GetMapping(value = "/{filename}/{token_value}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public @ResponseBody byte[] getImage(@PathVariable("token_value") String token_value, @PathVariable("filename") String filename) throws IOException {
+        Token token = new Token(token_value);
         Role role = new Role(token);
         try {
             role.setPermission(db.queryForObject(new UserRoleByToken(token.value).query(), String.class));

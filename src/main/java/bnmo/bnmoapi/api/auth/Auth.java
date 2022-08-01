@@ -1,7 +1,5 @@
 package bnmo.bnmoapi.api.auth;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -42,7 +40,7 @@ public class Auth {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody UserLogin user, HttpServletResponse response) {	
+	public ResponseEntity<?> login(@RequestBody UserLogin user) {	
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		try {
 			User user_db = db.queryForObject(new UserDetailByUsername(user.username).query(), (rs, rowNum) -> new User (

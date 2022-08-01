@@ -26,4 +26,8 @@ public class Token {
             }
         }
     }
+
+    public Token(String value) {
+        this.value = value;
+    }
 }
